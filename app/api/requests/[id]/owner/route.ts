@@ -18,7 +18,7 @@ export async function PATCH(
   }
 
   const { decision, note } = await req.json().catch(() => ({}));
-  if (decision !== "approve" && decision !== "deny") {
+  if (!["approve", "deny", "cancel"].includes(decision)) {
     return NextResponse.json({ error: "Invalid decision." }, { status: 400 });
   }
 
@@ -35,6 +35,22 @@ export async function PATCH(
   }
 
   const now = new Date().toISOString();
+
+  // Force-cancel a request that's still awaiting team responses. Like a deny,
+  // a note is required; the schedule is left untouched.
+  if (decision === "cancel") {
+    if (!note || !String(note).trim()) {
+      return NextResponse.json(
+        { error: "A note is required when cancelling a request." },
+        { status: 400 }
+      );
+    }
+    request.overallStatus = "cancelled";
+    request.ownerNote = String(note).trim();
+    request.resolvedAt = now;
+    saveRequests(requests);
+    return NextResponse.json({ request });
+  }
 
   if (decision === "deny") {
     if (!note || !String(note).trim()) {

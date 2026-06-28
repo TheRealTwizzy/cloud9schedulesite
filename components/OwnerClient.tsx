@@ -6,8 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import RequestCard, { type ShiftSummary } from "@/components/RequestCard";
 import WeekGrid from "@/components/WeekGrid";
 import { useToast } from "@/components/Toast";
+import { locationColor } from "@/lib/locationColors";
 import type { OverallStatus, Shift, SwapRequest, User } from "@/lib/types";
-import { weekDates } from "@/lib/week";
+import { formatTime, weekDates } from "@/lib/week";
 
 type EmployeeLite = Pick<User, "id" | "displayName" | "group">;
 type RequestsResponse = {
@@ -26,6 +27,13 @@ export default function OwnerClient() {
   const [employees, setEmployees] = useState<EmployeeLite[]>([]);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<OverallStatus | "all">("all");
+  const [detailShift, setDetailShift] = useState<Shift | null>(null);
+
+  const employeeNames = useMemo(() => {
+    const m: Record<string, string> = {};
+    for (const e of employees) m[e.id] = e.displayName;
+    return m;
+  }, [employees]);
 
   const week = useMemo(() => weekDates(new Date()), []);
 
@@ -52,10 +60,10 @@ export default function OwnerClient() {
     router.refresh();
   }
 
-  async function decide(id: string, decision: "approve" | "deny") {
+  async function decide(id: string, decision: "approve" | "deny" | "cancel") {
     const note = notes[id] ?? "";
-    if (decision === "deny" && !note.trim()) {
-      toast("A note is required to deny.", "error");
+    if (decision !== "approve" && !note.trim()) {
+      toast(`A note is required to ${decision}.`, "error");
       return;
     }
     const res = await fetch(`/api/requests/${id}/owner`, {
@@ -64,7 +72,13 @@ export default function OwnerClient() {
       body: JSON.stringify({ decision, note }),
     });
     if (res.ok) {
-      toast(decision === "approve" ? "Approved." : "Denied.", "success");
+      const verb =
+        decision === "approve"
+          ? "Approved."
+          : decision === "deny"
+          ? "Denied."
+          : "Cancelled.";
+      toast(verb, "success");
       load();
     } else {
       const d = await res.json();
@@ -159,9 +173,26 @@ export default function OwnerClient() {
                   </div>
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-gray-500">
-                  Awaiting employee responses.
-                </p>
+                <div className="mt-3 space-y-2">
+                  <p className="text-sm text-gray-500">
+                    Awaiting employee responses.
+                  </p>
+                  <textarea
+                    placeholder="Reason (required to force-cancel)…"
+                    value={notes[r.id] ?? ""}
+                    onChange={(e) =>
+                      setNotes((n) => ({ ...n, [r.id]: e.target.value }))
+                    }
+                    rows={2}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                  />
+                  <button
+                    onClick={() => decide(r.id, "cancel")}
+                    className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Force Cancel
+                  </button>
+                </div>
               )}
             </RequestCard>
           ))}
@@ -206,7 +237,67 @@ export default function OwnerClient() {
       )}
 
       {tab === "schedule" && (
-        <WeekGrid employees={employees} shifts={shifts} week={week} />
+        <WeekGrid
+          employees={employees}
+          shifts={shifts}
+          week={week}
+          onShiftClick={setDetailShift}
+        />
+      )}
+
+      {detailShift && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4"
+          onClick={() => setDetailShift(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Shift details</h3>
+              <button
+                onClick={() => setDetailShift(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Employee</dt>
+                <dd className="font-medium text-gray-900">
+                  {employeeNames[detailShift.employeeId] ?? detailShift.employeeId}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Date</dt>
+                <dd className="text-gray-900">
+                  {detailShift.dayOfWeek}, {detailShift.date}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Time</dt>
+                <dd className="text-gray-900">
+                  {formatTime(detailShift.startTime)}–
+                  {formatTime(detailShift.endTime)}
+                  {detailShift.crossesMidnight && " (overnight)"}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Location</dt>
+                <dd>
+                  <span
+                    className="rounded px-2 py-0.5 text-xs font-semibold text-white"
+                    style={{ backgroundColor: locationColor(detailShift.location) }}
+                  >
+                    {detailShift.location}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
       )}
     </div>
   );
