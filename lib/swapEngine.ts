@@ -70,6 +70,12 @@ function primaryIncludes(user: User, location: string): boolean {
   return (user.primaryLocations ?? []).includes(location);
 }
 
+// Store (sales-floor) locations, as opposed to security/warehouse posts.
+const NON_STORE = new Set(["Security", "Overnight Security", "Warehouse"]);
+function isStore(location: string): boolean {
+  return !NON_STORE.has(location);
+}
+
 export type SuggestArgs = {
   targetShiftId: string;
   users: User[];
@@ -143,6 +149,7 @@ export function suggestChains({
       ],
       locationChanges: primaryIncludes(cand, target.location) ? 0 : 1,
       primaryMatch: primaryIncludes(cand, target.location),
+      securityStore: cand.group === "security" && isStore(target.location),
     });
   }
 
@@ -203,6 +210,7 @@ export function suggestChains({
         ],
         locationChanges: changes,
         primaryMatch,
+        securityStore: b.group === "security" && isStore(target.location),
       });
     }
   }
@@ -212,6 +220,10 @@ export function suggestChains({
   // 4. alphabetical by first chain member.
   suggestions.sort((a, b) => {
     if (a.hops !== b.hops) return a.hops - b.hops;
+    // Security covering a store ranks below every non-security option — this is
+    // a hard rule, so it must outrank the primary-location/location-change
+    // tie-breaks (a security employee can have a store in primaryLocations).
+    if (a.securityStore !== b.securityStore) return a.securityStore ? 1 : -1;
     if (a.primaryMatch !== b.primaryMatch) return a.primaryMatch ? -1 : 1;
     if (a.locationChanges !== b.locationChanges)
       return a.locationChanges - b.locationChanges;
