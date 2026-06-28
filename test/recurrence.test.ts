@@ -90,6 +90,36 @@ describe("materializeWeek", () => {
     const out = materializeWeek(template, nextWeek, rec);
     assert.ok(out.some((s) => s.employeeId === "u_corben" && s.date === "2026-07-07"));
   });
+
+  it("recurs from the original owner when a shift was covered (one-off swap)", () => {
+    // An owner-approved swap mutates the concrete shift in place: Corben's Tue
+    // shift is now worked by Quince, with the original owner preserved. Future
+    // weeks must still recur to Corben, and must not carry coverage metadata.
+    const covered: Shift[] = template.map((s) =>
+      s.id === "shf_c"
+        ? { ...s, employeeId: "u_quince", coveredBy: "u_quince", originalEmployeeId: "u_corben" }
+        : s
+    );
+    const out = materializeWeek(covered, nextWeek, {});
+    const tue = out.find((s) => s.id.startsWith("shf_c"));
+    assert.equal(tue?.employeeId, "u_corben"); // original owner, not the coverer
+    assert.equal(tue?.coveredBy, undefined);
+    assert.equal(tue?.originalEmployeeId, undefined);
+  });
+
+  it("applies a temporary expiration against the original owner of a covered shift", () => {
+    const covered: Shift[] = template.map((s) =>
+      s.id === "shf_c"
+        ? { ...s, employeeId: "u_quince", coveredBy: "u_quince", originalEmployeeId: "u_corben" }
+        : s
+    );
+    // Corben (the original owner) is temporary and already expired.
+    const rec: RecurrenceMap = {
+      u_corben: { permanent: false, expiresOn: "2026-07-04" },
+    };
+    const out = materializeWeek(covered, nextWeek, rec);
+    assert.ok(!out.some((s) => s.id.startsWith("shf_c")));
+  });
 });
 
 describe("shiftsForWeek", () => {

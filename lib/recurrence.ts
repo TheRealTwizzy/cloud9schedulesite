@@ -34,6 +34,12 @@ export function recursOn(
 
 // Materialize a target week from the weekly `template` (the seeded week's
 // shifts), mapping each template shift onto the matching day in `weekDates`.
+//
+// The template is the live schedule, which an owner-approved swap/time-off can
+// mutate in place (reassigning a shift's `employeeId` and recording coverage
+// metadata). Those are one-off changes to the concrete week, so we recur from
+// the shift's *original* owner and drop the coverage metadata — otherwise a
+// single approved swap would reassign that shift in every future week.
 export function materializeWeek(
   template: Shift[],
   weekDates: string[],
@@ -44,8 +50,12 @@ export function materializeWeek(
     const idx = DAY_INDEX[t.dayOfWeek];
     if (idx === undefined) continue;
     const date = weekDates[idx];
-    if (!recursOn(recurrence, t.employeeId, date)) continue;
-    out.push({ ...t, id: `${t.id}@${date}`, date, recurring: true });
+    const employeeId = t.originalEmployeeId ?? t.employeeId;
+    if (!recursOn(recurrence, employeeId, date)) continue;
+    const { coveredBy, originalEmployeeId, ...base } = t;
+    void coveredBy;
+    void originalEmployeeId;
+    out.push({ ...base, id: `${t.id}@${date}`, date, employeeId, recurring: true });
   }
   return out;
 }

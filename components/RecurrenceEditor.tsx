@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RecurrenceMap, User } from "@/lib/types";
 
 type EmployeeLite = Pick<User, "id" | "displayName" | "group">;
@@ -55,6 +55,15 @@ function EmployeeRow({
     entry && !entry.permanent ? "temporary" : "permanent"
   );
   const [draftDate, setDraftDate] = useState(entry?.expiresOn ?? "");
+
+  // Recurrence data is fetched separately from the employee list, so an entry
+  // can arrive after this row first renders. Re-sync local state when it does
+  // (and after a save echoes the updated entry back) so the row never shows
+  // stale settings.
+  useEffect(() => {
+    setMode(entry && !entry.permanent ? "temporary" : "permanent");
+    setDraftDate(entry?.expiresOn ?? "");
+  }, [entry]);
 
   function commit(nextMode: "permanent" | "temporary", date: string) {
     if (nextMode === "permanent") onChange(employee.id, true);
