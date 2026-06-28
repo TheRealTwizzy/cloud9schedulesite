@@ -28,7 +28,18 @@ export type Shift = {
   // Optional coverage metadata written when a time-off request is approved.
   coveredBy?: string;
   originalEmployeeId?: string;
+  // True for a materialized (recurring) instance rather than a concrete record.
+  recurring?: boolean;
 };
+
+// Per-employee recurrence settings, keyed by employee id in recurrence.json.
+// A missing entry means the employee's weekly pattern recurs indefinitely.
+export type EmployeeRecurrence = {
+  permanent: boolean;
+  expiresOn?: string; // ISO date; only meaningful when permanent === false
+};
+
+export type RecurrenceMap = Record<string, EmployeeRecurrence>;
 
 export type LocationHours =
   | Record<string, { open: string; close: string } | null>

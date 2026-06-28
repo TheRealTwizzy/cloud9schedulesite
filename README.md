@@ -66,6 +66,7 @@ The files in `data/` are read and written at runtime by the API routes:
 - `locations.json` — locations and brand colors.
 - `swap_config.json` — swap-engine rules (read-only at runtime).
 - `requests.json` — submitted time-off and swap requests.
+- `recurrence.json` — per-employee recurring-schedule settings.
 
 Anything you do in the app — setting a password, submitting a request, an owner
 approving a swap — is written to these files and **persists across restarts**.
@@ -78,14 +79,26 @@ To reset an account's password, set its `hashedPassword` back to `null` and
 `schedule.json` is seeded for the week of **June 28 – July 4, 2026**, which is
 the current week for this project, so you will see live shifts on first run.
 
-The schedule is a flat list of dated shift records — it is **not** recurring.
-Weeks outside the seeded range render "No shifts scheduled this week." (See
-[Limitations](#current-limitations).)
+## Recurring schedules
+
+The seeded week acts as each employee's **weekly pattern**. Any week that has no
+concrete shifts of its own is materialized from that pattern, so future weeks
+show the same schedule automatically. Use the **← Prev / Next →** controls on
+the dashboard and the owner's Employee Schedule tab to move between weeks.
+
+In the owner console's **Employee Schedule** tab, each employee has a
+**Permanent / Temporary** setting:
+
+- **Permanent** (the default) — their pattern repeats indefinitely.
+- **Temporary** — pick an expiration date; their shifts stop recurring after it.
+
+These settings live in `data/recurrence.json`. The seeded week itself is concrete
+data and is unaffected by expiration; only materialized future weeks honor it.
 
 ## Tests
 
 ```bash
-npm test     # runs the swap-engine unit tests (offline)
+npm test     # runs the swap-engine and recurrence unit tests (offline)
 npm run lint
 npm run build
 ```
@@ -98,12 +111,14 @@ request to `main`.
 The app is built around the seeded data set. The following are intentionally
 **not** implemented yet (no admin UI exists for them):
 
-- **No recurring schedules** — only the one seeded week has shifts; future weeks
-  are empty unless shift records are added for those dates.
 - **No employee/location/organization management** — the roster in `users.json`,
   the locations in `locations.json`, and the single Cloud 9 organization are all
-  fixed in the data files; the owner console can review and approve requests but
-  cannot add employees, locations, or organizations.
+  fixed in the data files; the owner console can review and approve requests and
+  set each employee's recurrence, but cannot add employees, locations, or
+  organizations.
+- **Swaps target concrete shifts** — recurring (materialized) shifts in future
+  weeks don't have their own records, so swap/time-off requests are made against
+  the current concrete week.
 
 ## Notes
 

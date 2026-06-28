@@ -8,7 +8,13 @@ import ShiftCard from "@/components/ShiftCard";
 import SwapRequestModal from "@/components/SwapRequestModal";
 import { useToast } from "@/components/Toast";
 import type { RequestType, Shift, SwapRequest } from "@/lib/types";
-import { DAYS, toISODate, weekDates } from "@/lib/week";
+import {
+  DAYS,
+  shiftWeek,
+  toISODate,
+  weekDatesFromISO,
+  weekLabel,
+} from "@/lib/week";
 
 type RequestsResponse = {
   requests: SwapRequest[];
@@ -20,13 +26,17 @@ export default function DashboardClient({ userId }: { userId: string }) {
   const router = useRouter();
   const toast = useToast();
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [weekShifts, setWeekShifts] = useState<Shift[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [data, setData] = useState<RequestsResponse | null>(null);
   const [modal, setModal] = useState<RequestType | null>(null);
 
   const today = toISODate(new Date());
-  const week = useMemo(() => weekDates(new Date()), []);
+  const weekStart = useMemo(() => shiftWeek(new Date(), weekOffset), [weekOffset]);
+  const week = useMemo(() => weekDatesFromISO(weekStart), [weekStart]);
 
   const load = useCallback(async () => {
+    // Concrete shifts drive the request modal; requests power the panels.
     const [sRes, rRes] = await Promise.all([
       fetch("/api/schedule"),
       fetch("/api/requests"),
@@ -35,15 +45,24 @@ export default function DashboardClient({ userId }: { userId: string }) {
     if (rRes.ok) setData(await rRes.json());
   }, []);
 
+  const loadWeek = useCallback(async () => {
+    const res = await fetch(`/api/schedule/week?weekStart=${weekStart}`);
+    if (res.ok) setWeekShifts((await res.json()).shifts ?? []);
+  }, [weekStart]);
+
   useEffect(() => {
     load();
   }, [load]);
 
+  useEffect(() => {
+    loadWeek();
+  }, [loadWeek]);
+
   const shiftByDate = useMemo(() => {
     const map: Record<string, Shift> = {};
-    for (const s of shifts) map[s.date] = s;
+    for (const s of weekShifts) map[s.date] = s;
     return map;
-  }, [shifts]);
+  }, [weekShifts]);
 
   const upcoming = useMemo(
     () => shifts.filter((s) => s.date >= today).sort((a, b) => a.date.localeCompare(b.date)),
@@ -102,7 +121,9 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
       <section className="mb-8">
         <div className="mb-3 flex items-center justify-between">
-          <h1 className="text-xl font-semibold">This Week</h1>
+          <h1 className="text-xl font-semibold">
+            {weekOffset === 0 ? "This Week" : "Schedule"}
+          </h1>
           <div className="flex gap-2">
             <button
               onClick={() => setModal("time-off")}
@@ -118,7 +139,32 @@ export default function DashboardClient({ userId }: { userId: string }) {
             </button>
           </div>
         </div>
-        {shifts.length === 0 ? (
+        <div className="mb-3 flex items-center justify-between">
+          <button
+            onClick={() => setWeekOffset((o) => o - 1)}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+          >
+            ← Prev
+          </button>
+          <div className="text-center text-sm font-medium text-gray-700">
+            {weekLabel(week)}
+            {weekOffset !== 0 && (
+              <button
+                onClick={() => setWeekOffset(0)}
+                className="ml-2 text-xs text-c9-green hover:underline"
+              >
+                today
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => setWeekOffset((o) => o + 1)}
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+          >
+            Next →
+          </button>
+        </div>
+        {weekShifts.length === 0 ? (
           <p className="rounded-lg bg-white p-4 text-sm text-gray-500 shadow-sm">
             No shifts scheduled this week.
           </p>
