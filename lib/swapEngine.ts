@@ -220,11 +220,13 @@ export function suggestChains({
   // 4. alphabetical by first chain member.
   suggestions.sort((a, b) => {
     if (a.hops !== b.hops) return a.hops - b.hops;
+    // Security covering a store ranks below every non-security option — this is
+    // a hard rule, so it must outrank the primary-location/location-change
+    // tie-breaks (a security employee can have a store in primaryLocations).
+    if (a.securityStore !== b.securityStore) return a.securityStore ? 1 : -1;
     if (a.primaryMatch !== b.primaryMatch) return a.primaryMatch ? -1 : 1;
     if (a.locationChanges !== b.locationChanges)
       return a.locationChanges - b.locationChanges;
-    // Security covering a store ranks last among otherwise-equal options.
-    if (a.securityStore !== b.securityStore) return a.securityStore ? 1 : -1;
     return a.links[0].employeeName.localeCompare(b.links[0].employeeName);
   });
 

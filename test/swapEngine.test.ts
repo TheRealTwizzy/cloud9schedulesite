@@ -105,6 +105,27 @@ describe("suggestChains — direct cover", () => {
     assert.equal(suggestions[2].securityStore, true);
   });
 
+  it("ranks security last for a store shift even when the store is in their primaries", () => {
+    // Kaiden (security) is seeded with Black Hawk in primaryLocations, so a naive
+    // primary-match tie-break would float him above a non-primary general coverer.
+    const bhUsers = [
+      user("req", "general", ["Black Hawk"]),
+      user("gen", "general", ["Cloud 9"]), // non-primary for Black Hawk
+      user("kaiden", "security", ["Security", "Black Hawk"]),
+    ];
+    const bhSchedule = [shift("T", "req", "10:00", "16:00", "Black Hawk")];
+    const { suggestions } = suggestChains({
+      targetShiftId: "T",
+      users: bhUsers,
+      schedule: bhSchedule,
+      config,
+    });
+    assert.deepEqual(
+      suggestions.map((s) => s.links[0].employeeName),
+      ["gen", "kaiden"]
+    );
+  });
+
   it("never suggests the overnight employee", () => {
     const { suggestions } = suggestChains({
       targetShiftId: "T",
