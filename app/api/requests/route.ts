@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { getRequests, getSchedule, getShiftById, getUsers, saveRequests } from "@/lib/db";
+import {
+  getRequests,
+  getSchedule,
+  getShiftById,
+  getSwapConfig,
+  getUsers,
+  saveRequests,
+} from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { validateChain } from "@/lib/swapEngine";
 import type { ChainLink, SwapRequest } from "@/lib/types";
 
 // Requests relevant to the session user. Owner sees all; an employee sees the
@@ -79,6 +87,24 @@ export async function POST(req: Request) {
       { error: "Overnight shifts cannot be swapped." },
       { status: 400 }
     );
+  }
+
+  // Validate any proposed chain against the engine's rules before accepting it —
+  // a manually-built chain must be just as valid as a suggested one.
+  if (chain && chain.length > 0) {
+    const result = validateChain({
+      targetShiftId: target.id,
+      chain,
+      users: getUsers(),
+      schedule: getSchedule(),
+      config: getSwapConfig(),
+    });
+    if (!result.valid) {
+      return NextResponse.json(
+        { error: result.error ?? "Invalid coverage chain." },
+        { status: 400 }
+      );
+    }
   }
 
   const proposedChain: ChainLink[] = (chain ?? []).map((link) => ({
