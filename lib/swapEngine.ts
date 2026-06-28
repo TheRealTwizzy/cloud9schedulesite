@@ -70,6 +70,12 @@ function primaryIncludes(user: User, location: string): boolean {
   return (user.primaryLocations ?? []).includes(location);
 }
 
+// Store (sales-floor) locations, as opposed to security/warehouse posts.
+const NON_STORE = new Set(["Security", "Overnight Security", "Warehouse"]);
+function isStore(location: string): boolean {
+  return !NON_STORE.has(location);
+}
+
 export type SuggestArgs = {
   targetShiftId: string;
   users: User[];
@@ -143,6 +149,7 @@ export function suggestChains({
       ],
       locationChanges: primaryIncludes(cand, target.location) ? 0 : 1,
       primaryMatch: primaryIncludes(cand, target.location),
+      securityStore: cand.group === "security" && isStore(target.location),
     });
   }
 
@@ -203,6 +210,7 @@ export function suggestChains({
         ],
         locationChanges: changes,
         primaryMatch,
+        securityStore: b.group === "security" && isStore(target.location),
       });
     }
   }
@@ -215,6 +223,8 @@ export function suggestChains({
     if (a.primaryMatch !== b.primaryMatch) return a.primaryMatch ? -1 : 1;
     if (a.locationChanges !== b.locationChanges)
       return a.locationChanges - b.locationChanges;
+    // Security covering a store ranks last among otherwise-equal options.
+    if (a.securityStore !== b.securityStore) return a.securityStore ? 1 : -1;
     return a.links[0].employeeName.localeCompare(b.links[0].employeeName);
   });
 

@@ -101,6 +101,9 @@ export type ChainSuggestion = {
   }>;
   locationChanges: number;
   primaryMatch: boolean;
+  // True when the first coverer is a security employee taking a store shift —
+  // allowed, but ranked last per the group rules.
+  securityStore: boolean;
 };
 
 // iron-session payload.
