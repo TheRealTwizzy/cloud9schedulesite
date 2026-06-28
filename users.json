@@ -1,0 +1,270 @@
+[
+  {
+    "id": "usr_owner",
+    "username": "owner",
+    "displayName": "Owner",
+    "role": "owner",
+    "group": "owner",
+    "mustSetPassword": true,
+    "hashedPassword": null
+  },
+  {
+    "id": "usr_quince",
+    "username": "quince",
+    "displayName": "Quince",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9",
+      "Black Hawk"
+    ],
+    "note": "Regularly works 2 locations"
+  },
+  {
+    "id": "usr_alicia",
+    "username": "alicia",
+    "displayName": "Alicia",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_trey",
+    "username": "trey",
+    "displayName": "Trey",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_trenton",
+    "username": "trenton",
+    "displayName": "Trenton",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_jennie",
+    "username": "jennie",
+    "displayName": "Jennie",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_elise",
+    "username": "elise",
+    "displayName": "Elise",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_madden",
+    "username": "madden",
+    "displayName": "Madden",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_alize",
+    "username": "alize",
+    "displayName": "Aliz\u00e9",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Cloud 9"
+    ]
+  },
+  {
+    "id": "usr_tanya",
+    "username": "tanya",
+    "displayName": "Tanya",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Noc9"
+    ]
+  },
+  {
+    "id": "usr_raelin",
+    "username": "raelin",
+    "displayName": "Raelin",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Noc9"
+    ]
+  },
+  {
+    "id": "usr_owen",
+    "username": "owen",
+    "displayName": "Owen",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Noc9"
+    ]
+  },
+  {
+    "id": "usr_bethany",
+    "username": "bethany",
+    "displayName": "Bethany",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Spearfish",
+      "Noc9",
+      "Black Hawk"
+    ],
+    "note": "Regularly works 3 locations"
+  },
+  {
+    "id": "usr_chris",
+    "username": "chris",
+    "displayName": "Chris",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Black Hawk"
+    ]
+  },
+  {
+    "id": "usr_corben",
+    "username": "corben",
+    "displayName": "Corben",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Spearfish"
+    ]
+  },
+  {
+    "id": "usr_dominic",
+    "username": "dominic",
+    "displayName": "Dominic",
+    "role": "employee",
+    "group": "general",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Spearfish"
+    ]
+  },
+  {
+    "id": "usr_kaiden",
+    "username": "kaiden",
+    "displayName": "Kaiden",
+    "role": "employee",
+    "group": "security",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Security",
+      "Black Hawk"
+    ]
+  },
+  {
+    "id": "usr_hunter",
+    "username": "hunter",
+    "displayName": "Hunter",
+    "role": "employee",
+    "group": "security",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Security"
+    ]
+  },
+  {
+    "id": "usr_james",
+    "username": "james",
+    "displayName": "James",
+    "role": "employee",
+    "group": "overnight",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Overnight Security"
+    ],
+    "note": "Overnight only \u2014 excluded from swap engine"
+  },
+  {
+    "id": "usr_nate",
+    "username": "nate",
+    "displayName": "Nate",
+    "role": "employee",
+    "group": "warehouse",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Warehouse"
+    ]
+  },
+  {
+    "id": "usr_jessie",
+    "username": "jessie",
+    "displayName": "Jessie",
+    "role": "employee",
+    "group": "warehouse",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Warehouse"
+    ]
+  },
+  {
+    "id": "usr_julia",
+    "username": "julia",
+    "displayName": "Julia",
+    "role": "employee",
+    "group": "warehouse",
+    "mustSetPassword": true,
+    "hashedPassword": null,
+    "primaryLocations": [
+      "Warehouse"
+    ]
+  }
+]

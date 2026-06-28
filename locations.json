@@ -1,0 +1,180 @@
+[
+  {
+    "id": "loc_cloud9",
+    "name": "Cloud 9",
+    "color": "#6DB832",
+    "hours": {
+      "Sun": {
+        "open": "08:00",
+        "close": "22:00"
+      },
+      "Mon": {
+        "open": "06:00",
+        "close": "00:00"
+      },
+      "Tue": {
+        "open": "06:00",
+        "close": "00:00"
+      },
+      "Wed": {
+        "open": "06:00",
+        "close": "00:00"
+      },
+      "Thu": {
+        "open": "06:00",
+        "close": "00:00"
+      },
+      "Fri": {
+        "open": "06:00",
+        "close": "00:00"
+      },
+      "Sat": {
+        "open": "08:00",
+        "close": "00:00"
+      }
+    }
+  },
+  {
+    "id": "loc_noc9",
+    "name": "Noc9",
+    "color": "#7A2FA8",
+    "hours": {
+      "Sun": {
+        "open": "09:00",
+        "close": "21:00"
+      },
+      "Mon": {
+        "open": "09:00",
+        "close": "21:00"
+      },
+      "Tue": {
+        "open": "09:00",
+        "close": "21:00"
+      },
+      "Wed": {
+        "open": "09:00",
+        "close": "21:00"
+      },
+      "Thu": {
+        "open": "09:00",
+        "close": "21:00"
+      },
+      "Fri": {
+        "open": "09:00",
+        "close": "22:00"
+      },
+      "Sat": {
+        "open": "09:00",
+        "close": "22:00"
+      }
+    }
+  },
+  {
+    "id": "loc_spearfish",
+    "name": "Spearfish",
+    "color": "#0A5A58",
+    "hours": {
+      "Sun": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Mon": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Tue": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Wed": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Thu": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Fri": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Sat": {
+        "open": "10:00",
+        "close": "20:00"
+      }
+    }
+  },
+  {
+    "id": "loc_blackhawk",
+    "name": "Black Hawk",
+    "color": "#6B4A05",
+    "hours": {
+      "Sun": null,
+      "Mon": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Tue": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Wed": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Thu": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Fri": {
+        "open": "10:00",
+        "close": "20:00"
+      },
+      "Sat": {
+        "open": "10:00",
+        "close": "20:00"
+      }
+    }
+  },
+  {
+    "id": "loc_warehouse",
+    "name": "Warehouse",
+    "color": "#0F3D7A",
+    "hours": {
+      "Sun": null,
+      "Mon": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "Tue": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "Wed": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "Thu": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "Fri": {
+        "open": "09:00",
+        "close": "17:00"
+      },
+      "Sat": null
+    }
+  },
+  {
+    "id": "loc_security",
+    "name": "Security",
+    "color": "#8C1313",
+    "hours": "24/7"
+  },
+  {
+    "id": "loc_overnight",
+    "name": "Overnight Security",
+    "color": "#5A0808",
+    "hours": "Nightly 11PM\u20137AM"
+  }
+]

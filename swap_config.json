@@ -1,0 +1,66 @@
+{
+  "maxChainLength": 2,
+  "maxSuggestions": 3,
+  "groupRules": {
+    "overnight": {
+      "canSwapWithGroups": [],
+      "canCoverLocations": [],
+      "note": "James is overnight-only. His shifts are excluded from the swap engine entirely."
+    },
+    "warehouse": {
+      "canSwapWithGroups": [
+        "warehouse"
+      ],
+      "canCoverLocations": [
+        "Warehouse"
+      ],
+      "note": "Warehouse employees never cover store or security shifts."
+    },
+    "security": {
+      "canSwapWithGroups": [
+        "security",
+        "general"
+      ],
+      "canCoverLocations": [
+        "Security",
+        "Overnight Security",
+        "Cloud 9",
+        "Noc9",
+        "Spearfish",
+        "Black Hawk"
+      ],
+      "preferredLocations": [
+        "Security",
+        "Overnight Security"
+      ],
+      "note": "Kaiden and Hunter can cover sales floor but are lower priority for store suggestions."
+    },
+    "general": {
+      "canSwapWithGroups": [
+        "general",
+        "security"
+      ],
+      "canCoverLocations": [
+        "Cloud 9",
+        "Noc9",
+        "Spearfish",
+        "Black Hawk",
+        "Security"
+      ],
+      "note": "General pool can cross-cover any store location. Security coverage is last resort."
+    }
+  },
+  "suggestionRankingCriteria": [
+    "fewest hops",
+    "fewest location changes",
+    "primary location match",
+    "alphabetical"
+  ],
+  "approvalFlow": [
+    "All employees in the proposed chain must individually accept",
+    "Any single decline cancels the entire chain",
+    "Once all employees accept, request enters owner approval queue",
+    "Owner approves or denies with optional note",
+    "Approval writes updated shifts to schedule.json"
+  ]
+}
