@@ -28,6 +28,31 @@ export function weekDates(ref: Date = new Date()): string[] {
   });
 }
 
+// The seven ISO dates for the week containing the given ISO date.
+export function weekDatesFromISO(iso: string): string[] {
+  return weekDates(new Date(`${iso}T00:00:00`));
+}
+
+// Shift the week containing `ref` by `weeks` (negative = past), returning the
+// new week's Sunday as an ISO date.
+export function shiftWeek(ref: Date, weeks: number): string {
+  const start = startOfWeek(ref);
+  start.setDate(start.getDate() + weeks * 7);
+  return toISODate(start);
+}
+
+// "Jun 28 – Jul 4, 2026" label for a week given its seven dates.
+export function weekLabel(dates: string[]): string {
+  const fmt = (iso: string, withYear = false) => {
+    const d = new Date(`${iso}T00:00:00`);
+    const month = d.toLocaleString("en-US", { month: "short" });
+    return withYear
+      ? `${month} ${d.getDate()}, ${d.getFullYear()}`
+      : `${month} ${d.getDate()}`;
+  };
+  return `${fmt(dates[0])} – ${fmt(dates[6], true)}`;
+}
+
 // "8:00 AM" from "08:00".
 export function formatTime(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);

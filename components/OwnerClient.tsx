@@ -3,12 +3,24 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import RecurrenceEditor from "@/components/RecurrenceEditor";
 import RequestCard, { type ShiftSummary } from "@/components/RequestCard";
 import WeekGrid from "@/components/WeekGrid";
 import { useToast } from "@/components/Toast";
 import { locationColor } from "@/lib/locationColors";
-import type { OverallStatus, Shift, SwapRequest, User } from "@/lib/types";
-import { formatTime, weekDates } from "@/lib/week";
+import type {
+  OverallStatus,
+  RecurrenceMap,
+  Shift,
+  SwapRequest,
+  User,
+} from "@/lib/types";
+import {
+  formatTime,
+  shiftWeek,
+  weekDatesFromISO,
+  weekLabel,
+} from "@/lib/week";
 
 type EmployeeLite = Pick<User, "id" | "displayName" | "group">;
 type RequestsResponse = {
@@ -28,6 +40,8 @@ export default function OwnerClient() {
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState<OverallStatus | "all">("all");
   const [detailShift, setDetailShift] = useState<Shift | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [recurrence, setRecurrence] = useState<RecurrenceMap>({});
 
   const employeeNames = useMemo(() => {
     const m: Record<string, string> = {};
@@ -35,24 +49,54 @@ export default function OwnerClient() {
     return m;
   }, [employees]);
 
-  const week = useMemo(() => weekDates(new Date()), []);
+  const weekStart = useMemo(() => shiftWeek(new Date(), weekOffset), [weekOffset]);
+  const week = useMemo(() => weekDatesFromISO(weekStart), [weekStart]);
 
   const load = useCallback(async () => {
-    const [rRes, wRes] = await Promise.all([
+    const [rRes, recRes] = await Promise.all([
       fetch("/api/requests"),
-      fetch("/api/schedule/week"),
+      fetch("/api/recurrence"),
     ]);
     if (rRes.ok) setData(await rRes.json());
+    if (recRes.ok) setRecurrence((await recRes.json()).recurrence ?? {});
+  }, []);
+
+  const loadWeek = useCallback(async () => {
+    const wRes = await fetch(`/api/schedule/week?weekStart=${weekStart}`);
     if (wRes.ok) {
       const w = await wRes.json();
       setShifts(w.shifts ?? []);
       setEmployees(w.employees ?? []);
     }
-  }, []);
+  }, [weekStart]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    loadWeek();
+  }, [loadWeek]);
+
+  async function setEmployeeRecurrence(
+    employeeId: string,
+    permanent: boolean,
+    expiresOn?: string
+  ) {
+    const res = await fetch("/api/recurrence", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ employeeId, permanent, expiresOn }),
+    });
+    if (res.ok) {
+      setRecurrence((await res.json()).recurrence ?? {});
+      toast("Schedule setting saved.", "success");
+      loadWeek();
+    } else {
+      const d = await res.json();
+      toast(d.error ?? "Could not save setting.", "error");
+    }
+  }
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -237,12 +281,46 @@ export default function OwnerClient() {
       )}
 
       {tab === "schedule" && (
-        <WeekGrid
-          employees={employees}
-          shifts={shifts}
-          week={week}
-          onShiftClick={setDetailShift}
-        />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setWeekOffset((o) => o - 1)}
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            >
+              ← Prev
+            </button>
+            <div className="text-center">
+              <div className="text-sm font-semibold text-gray-800">
+                {weekLabel(week)}
+              </div>
+              {weekOffset !== 0 && (
+                <button
+                  onClick={() => setWeekOffset(0)}
+                  className="text-xs text-c9-green hover:underline"
+                >
+                  back to this week
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setWeekOffset((o) => o + 1)}
+              className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+            >
+              Next →
+            </button>
+          </div>
+          <WeekGrid
+            employees={employees}
+            shifts={shifts}
+            week={week}
+            onShiftClick={setDetailShift}
+          />
+          <RecurrenceEditor
+            employees={employees}
+            recurrence={recurrence}
+            onChange={setEmployeeRecurrence}
+          />
+        </div>
       )}
 
       {detailShift && (

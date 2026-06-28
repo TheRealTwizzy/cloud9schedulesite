@@ -4,7 +4,14 @@
 
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import type { Location, Shift, SwapConfig, SwapRequest, User } from "./types";
+import type {
+  Location,
+  RecurrenceMap,
+  Shift,
+  SwapConfig,
+  SwapRequest,
+  User,
+} from "./types";
 
 const DATA_DIR = join(process.cwd(), "data");
 
@@ -61,6 +68,16 @@ export function getLocations(): Location[] {
 
 export function getSwapConfig(): SwapConfig {
   return readJson<SwapConfig>("swap_config.json");
+}
+
+// --- Recurrence ------------------------------------------------------------
+
+export function getRecurrence(): RecurrenceMap {
+  return readJson<RecurrenceMap>("recurrence.json");
+}
+
+export function saveRecurrence(map: RecurrenceMap): void {
+  writeJson("recurrence.json", map);
 }
 
 // --- Requests --------------------------------------------------------------
