@@ -173,7 +173,8 @@ export function suggestChains({
 
     for (const c of users) {
       if (c.id === requester.id || c.id === b.id) continue;
-      if (c.role !== "employee" || c.group === "overnight") continue;
+      if (c.role !== "employee" || c.active === false || c.group === "overnight")
+        continue;
       if (!canCoverLocation(c, bShift.location, config)) continue;
 
       const cBusy = isDoubleBooked(

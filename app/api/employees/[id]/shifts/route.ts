@@ -1,21 +1,49 @@
 import { NextResponse } from "next/server";
 import { getLocations, getSchedule, getUserById, saveSchedule } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { templateWeekAnchor } from "@/lib/recurrence";
 import type { Shift } from "@/lib/types";
-import { DAYS, weekDates } from "@/lib/week";
+import { DAYS, toISODate, weekDatesFromISO } from "@/lib/week";
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-// Add a shift to an employee's current-week schedule. Because the current week
-// is the recurring template, the shift also repeats in future weeks.
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+async function requireOwner() {
   const session = await getSession();
   if (!session.userId || session.mustSetPassword) {
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    return { error: NextResponse.json({ error: "Not authenticated." }, { status: 401 }) };
   }
   if (session.role !== "owner") {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+    return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
   }
+  return { session };
+}
+
+// The seven dates of the canonical template week (falls back to the current
+// week when there are no shifts yet to anchor to).
+function templateWeek(): string[] {
+  const anchor = templateWeekAnchor(getSchedule()) ?? toISODate(new Date());
+  return weekDatesFromISO(anchor);
+}
+
+// An employee's recurring pattern shifts (concrete template-week records with
+// real ids). Filtered by the *recurring owner* so a covered shift shows under
+// the original owner, not the temporary coverer.
+export async function GET(_req: Request, { params }: { params: { id: string } }) {
+  const gate = await requireOwner();
+  if (gate.error) return gate.error;
+
+  const week = new Set(templateWeek());
+  const shifts = getSchedule().filter(
+    (s) => week.has(s.date) && (s.originalEmployeeId ?? s.employeeId) === params.id
+  );
+  return NextResponse.json({ shifts });
+}
+
+// Add a shift to an employee's recurring pattern. It is written into the
+// template week so it repeats in every materialized week.
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const gate = await requireOwner();
+  if (gate.error) return gate.error;
 
   const employee = getUserById(params.id);
   if (!employee || employee.role !== "employee") {
@@ -38,7 +66,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: "Unknown location." }, { status: 400 });
   }
 
-  const date = weekDates()[dayIndex];
+  const date = templateWeek()[dayIndex];
   const shift: Shift = {
     id: `shf_${crypto.randomUUID().slice(0, 8)}`,
     employeeId: employee.id,

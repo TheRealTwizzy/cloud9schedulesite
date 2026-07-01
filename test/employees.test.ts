@@ -108,24 +108,47 @@ describe("swap engine excludes inactive employees", () => {
     approvalFlow: [],
   };
 
-  it("never suggests a deactivated employee", () => {
+  function shiftAt(
+    id: string,
+    employeeId: string,
+    location: string,
+    start = "08:00",
+    end = "16:00"
+  ): Shift {
+    return {
+      id,
+      employeeId,
+      date: "2026-06-28",
+      dayOfWeek: "Sun",
+      startTime: start,
+      endTime: end,
+      location,
+      crossesMidnight: false,
+      endsNextDay: false,
+    };
+  }
+
+  it("never suggests a deactivated employee as a direct coverer", () => {
     const users = [user("req"), user("active_one"), user("gone", false)];
-    const schedule: Shift[] = [
-      {
-        id: "T",
-        employeeId: "req",
-        date: "2026-06-28",
-        dayOfWeek: "Sun",
-        startTime: "08:00",
-        endTime: "16:00",
-        location: "Cloud 9",
-        crossesMidnight: false,
-        endsNextDay: false,
-      },
+    const schedule = [shiftAt("T", "req", "Cloud 9")];
+    const { suggestions } = suggestChains({ targetShiftId: "T", users, schedule, config });
+    const ids = suggestions.flatMap((s) => s.links.map((l) => l.employeeId));
+    assert.ok(ids.includes("active_one"));
+    assert.ok(!ids.includes("gone"));
+  });
+
+  it("never suggests a deactivated employee as a relay (second) coverer", () => {
+    // busy can cover the target but is occupied; only the inactive employee
+    // could free them, so no valid chain should be produced.
+    const busy = { ...user("busy"), primaryLocations: ["Cloud 9"] };
+    const gone = { ...user("gone", false), primaryLocations: ["Noc9"] };
+    const users = [user("req"), busy, gone];
+    const schedule = [
+      shiftAt("T", "req", "Cloud 9"),
+      shiftAt("Bshift", "busy", "Noc9"), // busy overlaps the target
     ];
     const { suggestions } = suggestChains({ targetShiftId: "T", users, schedule, config });
-    const names = suggestions.flatMap((s) => s.links.map((l) => l.employeeId));
-    assert.ok(names.includes("active_one"));
-    assert.ok(!names.includes("gone"));
+    const ids = suggestions.flatMap((s) => s.links.map((l) => l.employeeId));
+    assert.ok(!ids.includes("gone"));
   });
 });

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { materializeWeek, recursOn, shiftsForWeek } from "../lib/recurrence";
+import {
+  materializeWeek,
+  recursOn,
+  shiftsForWeek,
+  templateWeekAnchor,
+} from "../lib/recurrence";
 import type { RecurrenceMap, Shift } from "../lib/types";
 
 // Seeded template week: Sun 2026-06-28 .. Sat 2026-07-04.
@@ -119,6 +124,16 @@ describe("materializeWeek", () => {
     };
     const out = materializeWeek(covered, nextWeek, rec);
     assert.ok(!out.some((s) => s.id.startsWith("shf_c")));
+  });
+});
+
+describe("templateWeekAnchor", () => {
+  it("returns the earliest shift date (inside the template week)", () => {
+    assert.equal(templateWeekAnchor(template), "2026-06-29");
+  });
+
+  it("returns null when there are no shifts", () => {
+    assert.equal(templateWeekAnchor([]), null);
   });
 });
 

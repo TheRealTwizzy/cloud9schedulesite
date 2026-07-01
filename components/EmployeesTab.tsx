@@ -340,11 +340,9 @@ function ShiftEditor({ employee }: { employee: EmployeeSafe }) {
   const [location, setLocation] = useState(LOCATIONS[0]);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/schedule/week");
-    if (res.ok) {
-      const all: Shift[] = (await res.json()).shifts ?? [];
-      setShifts(all.filter((s) => s.employeeId === employee.id));
-    }
+    // Template-week pattern shifts with real ids, keyed by recurring owner.
+    const res = await fetch(`/api/employees/${employee.id}/shifts`);
+    if (res.ok) setShifts((await res.json()).shifts ?? []);
   }, [employee.id]);
 
   useEffect(() => {
