@@ -119,6 +119,7 @@ export function suggestChains({
     (u) =>
       u.id !== requester.id &&
       u.role === "employee" &&
+      u.active !== false &&
       u.group !== "overnight" &&
       canCoverLocation(u, target.location, config)
   );
@@ -252,12 +253,13 @@ export function suggestChains({
   return { suggestions: top };
 }
 
-// An employee who can ever appear in a chain: a real employee, not overnight,
-// not the requester.
+// An employee who can ever appear in a chain: an active employee, not
+// overnight, not the requester.
 function isEligibleCoverer(user: User, requesterId: string): boolean {
   return (
     user.id !== requesterId &&
     user.role === "employee" &&
+    user.active !== false &&
     user.group !== ("overnight" as Group)
   );
 }

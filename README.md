@@ -106,16 +106,27 @@ npm run build
 CI (`.github/workflows/ci.yml`) runs lint, tests, and build on every pull
 request to `main`.
 
+## Employee management
+
+The owner console's **Employees** tab lets the owner:
+
+- **Add** an employee (display name, username, group, primary locations). New
+  hires set their own password on first login, like the seeded accounts.
+- **Edit** an employee's display name, group, and primary locations.
+- **Deactivate / reactivate** an employee — inactive staff are excluded from the
+  swap engine and from future recurring weeks, but their record and history stay.
+- **Delete** an employee permanently, which also removes their shifts and
+  recurrence entry.
+- **Assign weekly shifts** — add or remove shifts (day, time, location) for the
+  current week; because the current week is the recurring template, they become
+  that employee's repeating pattern.
+
 ## Current limitations
 
-The app is built around the seeded data set. The following are intentionally
-**not** implemented yet (no admin UI exists for them):
+The following are intentionally **not** implemented yet (no admin UI exists):
 
-- **No employee/location/organization management** — the roster in `users.json`,
-  the locations in `locations.json`, and the single Cloud 9 organization are all
-  fixed in the data files; the owner console can review and approve requests and
-  set each employee's recurrence, but cannot add employees, locations, or
-  organizations.
+- **No location or organization management** — the locations in `locations.json`
+  and the single Cloud 9 organization are fixed in the data files.
 - **Swaps target concrete shifts** — recurring (materialized) shifts in future
   weeks don't have their own records, so swap/time-off requests are made against
   the current concrete week.
