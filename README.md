@@ -121,6 +121,27 @@ The owner console's **Employees** tab lets the owner:
   current week; because the current week is the recurring template, they become
   that employee's repeating pattern.
 
+## Deployment (Fly.io)
+
+The app writes its data to JSON files, so it needs a **persistent disk** — a
+static or ephemeral host would lose every password and request on redeploy. The
+included config deploys to [Fly.io](https://fly.io) with a persistent volume:
+
+- **`Dockerfile`** — multi-stage build using Next.js standalone output.
+- **`fly.toml`** — 512 MB VM, forced HTTPS, and a `cloud9_data` volume mounted at
+  `/mnt/data` with `DATA_DIR=/mnt/data`.
+- **`scripts/seed-volume.mjs`** — copies the seed JSON into the volume on first
+  boot **only if absent**, so live data is never overwritten on redeploy.
+- **`lib/db.ts`** reads `DATA_DIR` (defaults to `./data` locally).
+
+```bash
+flyctl launch --no-deploy          # or `flyctl apps create` if fly.toml exists
+flyctl volumes create cloud9_data --size 1 --region ord
+flyctl deploy
+```
+
+> Set a real `SESSION_SECRET` before deploying (see [Notes](#notes)).
+
 ## Current limitations
 
 The following are intentionally **not** implemented yet (no admin UI exists):

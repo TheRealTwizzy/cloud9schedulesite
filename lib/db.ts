@@ -13,7 +13,9 @@ import type {
   User,
 } from "./types";
 
-const DATA_DIR = join(process.cwd(), "data");
+// Overridable via env so deployments can point at a persistent volume
+// (see fly.toml / scripts/seed-volume.mjs). Defaults to ./data for local dev.
+const DATA_DIR = process.env.DATA_DIR ?? join(process.cwd(), "data");
 
 function readJson<T>(file: string): T {
   const raw = readFileSync(join(DATA_DIR, file), "utf-8");

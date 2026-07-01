@@ -1,0 +1,32 @@
+# fly.toml — Fly.io deployment config for cloud9schedulesite
+
+app = "cloud9schedulesite"
+primary_region = "ord"   # Chicago; change to the region nearest you
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT      = "3000"
+  DATA_DIR  = "/mnt/data"   # persistent volume mount path
+
+[http_service]
+  internal_port       = 3000
+  force_https         = true
+  auto_stop_machines  = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type       = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[mounts]]
+  source      = "cloud9_data"
+  destination = "/mnt/data"
