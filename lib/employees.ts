@@ -1,7 +1,7 @@
 // Employee-management helpers. Pure and I/O-free so they can be unit-tested;
 // the API routes pass in the current data.
 
-import type { Group, Location, User } from "./types";
+import type { Group, Location, Shift, User } from "./types";
 
 // Groups an owner can assign (everything except the owner's own group).
 export const EMPLOYEE_GROUPS: Group[] = [
@@ -80,6 +80,30 @@ export function buildNewEmployee(
       active: true,
     },
   };
+}
+
+// Schedule after deleting an employee. Shifts the employee *owns* (their
+// recurring pattern) are removed; shifts they only *cover* for someone else
+// (via an approved swap) are reverted to the original owner so that owner's
+// pattern is preserved rather than deleted along with the coverer.
+export function cascadeDeleteShifts(
+  schedule: Shift[],
+  deletedId: string
+): Shift[] {
+  const kept: Shift[] = [];
+  for (const shift of schedule) {
+    const owner = shift.originalEmployeeId ?? shift.employeeId;
+    if (owner === deletedId) continue; // owned by the deleted employee → drop
+    if (shift.employeeId === deletedId) {
+      // Only a coverer → hand the shift back to its original owner.
+      const { coveredBy, originalEmployeeId, ...base } = shift;
+      void coveredBy;
+      kept.push({ ...base, employeeId: originalEmployeeId ?? shift.employeeId });
+    } else {
+      kept.push(shift);
+    }
+  }
+  return kept;
 }
 
 export type EmployeeUpdate = {

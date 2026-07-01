@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   applyEmployeeUpdate,
   buildNewEmployee,
+  cascadeDeleteShifts,
   slugifyUsername,
 } from "../lib/employees";
 import { suggestChains } from "../lib/swapEngine";
@@ -91,6 +92,37 @@ describe("applyEmployeeUpdate", () => {
 
   it("rejects an empty display name", () => {
     assert.equal(applyEmployeeUpdate(user("x"), { displayName: "  " }, locations).valid, false);
+  });
+});
+
+describe("cascadeDeleteShifts", () => {
+  it("removes shifts the deleted employee owns", () => {
+    const schedule: Shift[] = [
+      { id: "s1", employeeId: "x", date: "2026-06-29", dayOfWeek: "Mon", startTime: "09:00", endTime: "17:00", location: "Cloud 9", crossesMidnight: false, endsNextDay: false },
+      { id: "s2", employeeId: "y", date: "2026-06-29", dayOfWeek: "Mon", startTime: "09:00", endTime: "17:00", location: "Noc9", crossesMidnight: false, endsNextDay: false },
+    ];
+    const out = cascadeDeleteShifts(schedule, "x");
+    assert.deepEqual(out.map((s) => s.id), ["s2"]);
+  });
+
+  it("reverts a shift the deleted employee only covered back to its owner", () => {
+    // y owns s1 but x is currently covering it (approved swap).
+    const schedule: Shift[] = [
+      { id: "s1", employeeId: "x", originalEmployeeId: "y", coveredBy: "x", date: "2026-06-29", dayOfWeek: "Mon", startTime: "09:00", endTime: "17:00", location: "Cloud 9", crossesMidnight: false, endsNextDay: false },
+    ];
+    const out = cascadeDeleteShifts(schedule, "x");
+    assert.equal(out.length, 1);
+    assert.equal(out[0].employeeId, "y"); // reverted to owner
+    assert.equal(out[0].originalEmployeeId, undefined); // coverage metadata cleared
+    assert.equal(out[0].coveredBy, undefined);
+  });
+
+  it("removes an owned shift even when it is currently covered by someone else", () => {
+    // x owns s1, temporarily covered by z. Deleting x removes it.
+    const schedule: Shift[] = [
+      { id: "s1", employeeId: "z", originalEmployeeId: "x", coveredBy: "z", date: "2026-06-29", dayOfWeek: "Mon", startTime: "09:00", endTime: "17:00", location: "Cloud 9", crossesMidnight: false, endsNextDay: false },
+    ];
+    assert.equal(cascadeDeleteShifts(schedule, "x").length, 0);
   });
 });
 

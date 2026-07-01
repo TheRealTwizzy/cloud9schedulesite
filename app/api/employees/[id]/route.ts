@@ -8,7 +8,7 @@ import {
   saveSchedule,
   saveUsers,
 } from "@/lib/db";
-import { applyEmployeeUpdate } from "@/lib/employees";
+import { applyEmployeeUpdate, cascadeDeleteShifts } from "@/lib/employees";
 import { getSession } from "@/lib/session";
 
 async function requireOwner() {
@@ -64,8 +64,9 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   }
 
   saveUsers(users.filter((u) => u.id !== params.id));
-  // Drop their shifts so future weeks don't materialize a ghost employee.
-  saveSchedule(getSchedule().filter((s) => s.employeeId !== params.id));
+  // Remove shifts the employee owns; revert shifts they only covered back to
+  // their original owner so that owner's recurring pattern survives.
+  saveSchedule(cascadeDeleteShifts(getSchedule(), params.id));
   const recurrence = getRecurrence();
   if (recurrence[params.id]) {
     delete recurrence[params.id];
