@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import RecurrenceEditor from "@/components/RecurrenceEditor";
 import RequestCard, { type ShiftSummary } from "@/components/RequestCard";
+import EmployeesTab from "@/components/EmployeesTab";
 import WeekGrid from "@/components/WeekGrid";
 import { useToast } from "@/components/Toast";
 import { locationColor } from "@/lib/locationColors";
@@ -28,7 +29,7 @@ type RequestsResponse = {
   userNames: Record<string, string>;
   shiftIndex: Record<string, ShiftSummary>;
 };
-type Tab = "pending" | "all" | "schedule";
+type Tab = "pending" | "all" | "schedule" | "employees";
 
 export default function OwnerClient() {
   const router = useRouter();
@@ -143,6 +144,7 @@ export default function OwnerClient() {
     { key: "pending", label: `Pending Approval (${pending.length})` },
     { key: "all", label: "All Requests" },
     { key: "schedule", label: "Employee Schedule" },
+    { key: "employees", label: "Employees" },
   ];
 
   return (
@@ -322,6 +324,8 @@ export default function OwnerClient() {
           />
         </div>
       )}
+
+      {tab === "employees" && <EmployeesTab />}
 
       {detailShift && (
         <div

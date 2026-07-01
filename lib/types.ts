@@ -13,6 +13,9 @@ export type User = {
   hashedPassword: string | null;
   primaryLocations?: string[];
   note?: string;
+  // Deactivated employees are excluded from schedules and the swap engine.
+  // A missing flag means active.
+  active?: boolean;
 };
 
 export type Shift = {

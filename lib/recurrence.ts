@@ -60,6 +60,19 @@ export function materializeWeek(
   return out;
 }
 
+// An ISO date inside the canonical template week — the week that holds the
+// pattern shifts. New pattern shifts must be dated within this week so they
+// recur, rather than being written into an arbitrary week (which would make
+// `shiftsForWeek` treat that week as concrete and hide the rest of the pattern).
+// Returns null when there are no shifts to anchor to.
+export function templateWeekAnchor(schedule: Shift[]): string | null {
+  if (schedule.length === 0) return null;
+  return schedule.reduce(
+    (min, s) => (s.date < min ? s.date : min),
+    schedule[0].date
+  );
+}
+
 // Resolve the shifts shown for a week: concrete records win when the week has
 // any of its own; otherwise the week is materialized from the template.
 export function shiftsForWeek(

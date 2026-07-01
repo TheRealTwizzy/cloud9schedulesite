@@ -17,8 +17,15 @@ export async function GET(req: Request) {
   const dates = weekStart ? weekDatesFromISO(weekStart) : weekDates();
 
   const concrete = getSchedule();
-  // The seeded data is a single week and serves as the canonical weekly pattern.
-  const template = concrete;
+  // The seeded week is the canonical weekly pattern, but deactivated employees
+  // should not recur into future weeks — filter them out of the template (by a
+  // shift's original owner, since coverage may have reassigned employeeId).
+  const activeIds = new Set(
+    getUsers().filter((u) => u.active !== false).map((u) => u.id)
+  );
+  const template = concrete.filter((s) =>
+    activeIds.has(s.originalEmployeeId ?? s.employeeId)
+  );
   const weekShifts = shiftsForWeek(concrete, template, dates, getRecurrence());
 
   if (session.role === "owner") {
